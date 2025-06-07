@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Container, Title, Paper, FileInput, Button, Group, LoadingOverlay, Avatar, Box, Image, Text,Card,ActionIcon,SimpleGrid,Stack,Badge} from '@mantine/core';
+import { Container, Title, Paper, FileInput, Button, Group, LoadingOverlay, Avatar, Box, Image, Text, Card, ActionIcon, SimpleGrid, Stack, Badge, Flex } from '@mantine/core';
 import { IconUpload, IconX, IconPhoto } from '@tabler/icons-react';
 import avitoIcon2 from '../assets/avito2.png';
 import avitoIcon1 from '../assets/avito.png';
@@ -49,7 +49,7 @@ function UploadForm() {
     });
 
     try {
-      const response = await axios.post('http://localhost:8081/upload', formData, {
+      const response = await axios.post('http://localhost:8082/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
@@ -96,9 +96,13 @@ function UploadForm() {
             {files.length > 0 && (
               <Box>
                 <Group position="apart" mb="sm">
-                  <Text size="sm" weight={500}>
-                    Выбранные файлы: <Badge variant="filled">{files.length}</Badge>
-                  </Text>
+                  {/* Исправленная часть - используем Flex вместо Text с Badge внутри */}
+                  <Flex align="center" gap="xs">
+                    <Text size="sm" weight={500}>
+                      Выбранные файлы:
+                    </Text>
+                    <Badge variant="filled">{files.length}</Badge>
+                  </Flex>
                   <Button 
                     variant="subtle" 
                     size="xs" 

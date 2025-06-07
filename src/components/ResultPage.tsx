@@ -66,7 +66,7 @@ function ResultPage() {
 
         {results.map((result, index) => {
           const imageUrl = result.processed_image.startsWith('/')
-            ? `http://localhost:8081${result.processed_image}`
+            ? `http://localhost:8082${result.processed_image}`
             : result.processed_image;
 
           return (

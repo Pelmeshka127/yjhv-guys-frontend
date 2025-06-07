@@ -1,29 +1,18 @@
 import { useLocation } from 'react-router-dom';
-import { Container, Title, Image, Button, Box, Grid, Paper, Text, List, Skeleton, Flex } from '@mantine/core';
+import { Container, Title, Image, Button, Box, Grid, Paper, Text, List, Tabs, Flex } from '@mantine/core';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
 import avitoIcon1 from '../assets/avito.png'; 
 
 function ResultPage() {
   const location = useLocation();
-  const { data: locationData } = location.state || {};
+  const responseData = location.state?.data || {};
   const navigate = useNavigate();
 
-  // Используем TanStack Query для получения данных анализа
-  const { data: analysisData, isLoading, isError } = useQuery({
-    queryKey: ['analysis', locationData?.processed_image],
-    queryFn: async () => {
-      if (!locationData?.processed_image) return null;
-      
-      // Здесь можно добавить реальный запрос к API, если данные нужно догружать
-      // В текущей реализации используем данные из location.state
-      return locationData.analysis || null;
-    },
-    staleTime: 60 * 1000, // 1 минута до устаревания данных
-    refetchOnWindowFocus: false,
-  });
+  // Извлекаем общее описание и список обработанных изображений
+  const { common_analysis, images } = responseData;
+  const results = images || [];
 
-  if (!locationData) {
+  if (!common_analysis || results.length === 0) {
     return (
       <Container size="lg" py="xl">
         <Text>Данные недоступны</Text>
@@ -34,13 +23,8 @@ function ResultPage() {
     );
   }
 
-  const imageUrl = locationData.processed_image.startsWith('/')
-    ? `http://localhost:8081${locationData.processed_image}`
-    : locationData.processed_image;
-
   return (
     <Container size="lg" py="xl">
-      {/* Исправленный заголовок с логотипом и кнопкой */}
       <Flex 
         justify="center" 
         align="center" 
@@ -70,105 +54,101 @@ function ResultPage() {
         </Button>
       </Flex>
 
-      <Grid gutter="xl" align="stretch">
-        {/* Левая колонка с изображением */}
-        <Grid.Col span={6}>
-          <Paper 
-            withBorder 
-            radius="md" 
-            style={{ 
-              height: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '10px',
-              backgroundColor: '#f8f9fa'
-            }}
-          >
-            <Image
-              src={imageUrl || "/placeholder.svg"}
-              alt="Обработанное фото"
-              radius="md"
-              style={{ 
-                maxWidth: '100%',
-                maxHeight: '100%',
-                objectFit: 'contain'
-              }}
-            />
-          </Paper>
-        </Grid.Col>
+      {/* Вкладки с фотографиями */}
+      <Tabs defaultValue={`photo-0`}>
+        <Tabs.List>
+          {results.map((result, index) => (
+            <Tabs.Tab key={index} value={`photo-${index}`}>
+              Фото {index + 1}
+            </Tabs.Tab>
+          ))}
+        </Tabs.List>
 
-        {/* Правая колонка с описанием */}
-        <Grid.Col span={6}>
-          <Paper 
-            shadow="sm" 
-            p="xl" 
-            radius="md" 
-            withBorder
-            style={{ 
-              height: '100%',
-              display: 'flex',
-              flexDirection: 'column',
-              backgroundColor: '#f8f9fa'
-            }}
-          >
-            <Box style={{ flex: 1 }}>
-              <Title order={3} mb="md">Результаты анализа</Title>
-              <Text size="lg" color="dimmed" mb="xl">
-                Классификация: <strong>{locationData.classification}</strong>
-              </Text>
+        {results.map((result, index) => {
+          const imageUrl = result.processed_image.startsWith('/')
+            ? `http://localhost:8082${result.processed_image}`
+            : result.processed_image;
 
-              {isLoading ? (
-                <Box>
-                  <Skeleton height={20} mb="sm" width="60%" />
-                  <Skeleton height={16} mb="xs" />
-                  <Skeleton height={16} mb="xs" />
-                  <Skeleton height={16} mb="xs" />
-                  <Skeleton height={16} mb="xl" />
-                  
-                  <Skeleton height={20} mb="sm" width="50%" />
-                  <Skeleton height={16} mb="xs" />
-                  <Skeleton height={16} mb="xl" />
-                </Box>
-              ) : isError ? (
-                <Text color="red">Ошибка загрузки данных анализа</Text>
-              ) : analysisData ? (
-                <>
-                  <Box mb="xl">
-                    <Text size="lg" weight={500} mb="sm">Детали автомобиля:</Text>
-                    <List spacing="sm" size="sm" mb="md">
-                      <List.Item>Марка: <strong>{analysisData.make}</strong></List.Item>
-                      <List.Item>Модель: <strong>{analysisData.model}</strong></List.Item>
-                      <List.Item>Год выпуска: <strong>{analysisData.year}</strong></List.Item>
-                      <List.Item>Цвет: <strong>{analysisData.color}</strong></List.Item>
-                      <List.Item>Состояние: <strong>{analysisData.condition}</strong></List.Item>
-                      <List.Item>Диапазон цен: <strong>{analysisData.price_range}</strong></List.Item>
-                    </List>
-                  </Box>
+          return (
+            <Tabs.Panel key={index} value={`photo-${index}`} pt="xl">
+              <Grid gutter="xl" align="stretch">
+                {/* Левая колонка - фотография */}
+                <Grid.Col span={6}>
+                  <Paper 
+                    withBorder 
+                    radius="md" 
+                    style={{ 
+                      height: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: '20px',
+                      backgroundColor: '#f8f9fa'
+                    }}
+                  >
+                    <Image
+                      src={imageUrl || "/placeholder.svg"}
+                      alt={`Фото автомобиля ${index + 1}`}
+                      radius="md"
+                      style={{ 
+                        maxWidth: '100%',
+                        maxHeight: '500px',
+                        objectFit: 'contain'
+                      }}
+                    />
+                  </Paper>
+                </Grid.Col>
 
-                  <Box mb="xl">
-                    <Text size="lg" weight={500} mb="sm">Особенности:</Text>
-                    <List spacing="sm" size="sm" mb="md">
-                      {analysisData.features.map((feature, index) => (
-                        <List.Item key={index}>{feature}</List.Item>
-                      ))}
-                    </List>
-                  </Box>
+                {/* Правая колонка - описание автомобиля */}
+                <Grid.Col span={6}>
+                  <Paper 
+                    shadow="sm" 
+                    p="xl" 
+                    radius="md" 
+                    withBorder
+                    style={{ 
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      backgroundColor: '#f8f9fa'
+                    }}
+                  >
+                    <Box style={{ flex: 1 }}>
+                      <Title order={3} mb="md" align="center">Описание автомобиля</Title>
+                      
+                      <Box mb="xl">
+                        <Text size="lg" weight={500} mb="sm">Детали:</Text>
+                        <List spacing="sm" size="sm" mb="md">
+                          <List.Item>Марка: <strong>{common_analysis.make}</strong></List.Item>
+                          <List.Item>Модель: <strong>{common_analysis.model}</strong></List.Item>
+                          <List.Item>Год выпуска: <strong>{common_analysis.year}</strong></List.Item>
+                          <List.Item>Цвет: <strong>{common_analysis.color}</strong></List.Item>
+                          <List.Item>Состояние: <strong>{common_analysis.condition}</strong></List.Item>
+                          <List.Item>Диапазон цен: <strong>{common_analysis.price_range}</strong></List.Item>
+                        </List>
+                      </Box>
 
-                  <Box>
-                    <Text size="lg" weight={500} mb="sm">Анализ рынка:</Text>
-                    <Text size="sm">{analysisData.market_analysis}</Text>
-                  </Box>
-                </>
-              ) : (
-                <Text size="sm" color="gray">
-                  Данные анализа отсутствуют
-                </Text>
-              )}
-            </Box>
-          </Paper>
-        </Grid.Col>
-      </Grid>
+                      <Box mb="xl">
+                        <Text size="lg" weight={500} mb="sm">Особенности:</Text>
+                        <List spacing="sm" size="sm" mb="md">
+                          {common_analysis.features.map((feature, idx) => (
+                            <List.Item key={idx}>{feature}</List.Item>
+                          ))}
+                        </List>
+                      </Box>
+
+                      <Box>
+                        <Text size="lg" weight={500} mb="sm">Анализ рынка:</Text>
+                        <Text size="sm">{common_analysis.market_analysis}</Text>
+                      </Box>
+                    </Box>
+                  </Paper>
+                </Grid.Col>
+              </Grid>
+            </Tabs.Panel>
+          );
+        })}
+      </Tabs>
     </Container>
   );
 }

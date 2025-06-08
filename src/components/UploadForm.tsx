@@ -49,7 +49,7 @@ function UploadForm() {
     });
 
     try {
-      const response = await axios.post('http://192.168.53.251:8082/upload', formData, {
+      const response = await axios.post('http://localhost:8082/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }

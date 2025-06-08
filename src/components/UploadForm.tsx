@@ -13,7 +13,7 @@ function UploadForm() {
 
   const handleFileChange = (newFiles) => {
     if (newFiles && newFiles.length > 0) {
-      // Добавляем новые файлы к существующим, избегая дубликатов
+      // Add new files to existing ones, avoiding duplicates
       const existingFileNames = files.map(f => f.name);
       const uniqueNewFiles = newFiles.filter(file => 
         !existingFileNames.includes(file.name)
@@ -31,7 +31,7 @@ function UploadForm() {
     setFiles([]);
   };
 
-  // Создаем URL для превью изображения
+  // Create URL for image preview
   const createImagePreview = (file) => {
     return URL.createObjectURL(file);
   };
@@ -43,13 +43,13 @@ function UploadForm() {
     setLoading(true);
     const formData = new FormData();
     
-    // Добавляем все файлы
+    // Add all files
     files.forEach(file => {
       formData.append('files', file);
     });
 
     try {
-      const response = await axios.post('http://localhost:8082/upload', formData, {
+      const response = await axios.post('http://192.168.53.251:8082/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
@@ -57,7 +57,7 @@ function UploadForm() {
       setLoading(false);
       navigate('/result', { state: { data: response.data } });
     } catch (error) {
-      console.error('Ошибка при загрузке файла:', error);
+      console.error('Error uploading file:', error);
       setLoading(false);
     }
   };
@@ -79,14 +79,14 @@ function UploadForm() {
         
         <Group position="center" mb="xl">
           <Avatar src={avitoIcon2} alt="Avito Logo" size={64} radius="xl" />
-          <Title order={1} align="center">Загрузите фото машины</Title>
+          <Title order={1} align="center">Upload car photos</Title>
         </Group>
         
         <form onSubmit={handleSubmit}>
           <Stack spacing="md">
             <FileInput
-              label="Добавить изображения"
-              placeholder="Нажмите для выбора файлов"
+              label="Add images"
+              placeholder="Click to select files"
               icon={<IconUpload size={14} />}
               multiple
               accept="image/*"
@@ -96,10 +96,9 @@ function UploadForm() {
             {files.length > 0 && (
               <Box>
                 <Group position="apart" mb="sm">
-                  {/* Исправленная часть - используем Flex вместо Text с Badge внутри */}
                   <Flex align="center" gap="xs">
                     <Text size="sm" weight={500}>
-                      Выбранные файлы:
+                      Selected files:
                     </Text>
                     <Badge variant="filled">{files.length}</Badge>
                   </Flex>
@@ -109,7 +108,7 @@ function UploadForm() {
                     color="red"
                     onClick={clearAllFiles}
                   >
-                    Очистить все
+                    Clear all
                   </Button>
                 </Group>
                 
@@ -179,9 +178,9 @@ function UploadForm() {
               loading={loading}
               size="lg"
             >
-              {loading ? 'Анализ...' : 
-               files.length === 0 ? 'Выберите фото для анализа' :
-               `Анализировать ${files.length} фото`}
+              {loading ? 'Analyzing...' : 
+               files.length === 0 ? 'Select photos for analysis' :
+               `Analyze ${files.length} photos`}
             </Button>
           </Stack>
         </form>

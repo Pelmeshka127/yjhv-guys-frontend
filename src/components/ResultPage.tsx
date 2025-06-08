@@ -1,145 +1,156 @@
-import { useLocation } from 'react-router-dom';
-import { Container, Title, Image, Button, Box, Grid, Paper, Text, List, Tabs, Flex } from '@mantine/core';
-import { useNavigate } from 'react-router-dom';
-import avitoIcon1 from '../assets/avito.png'; 
+import { useLocation, useNavigate } from "react-router-dom";
+import {
+  Container,
+  Title,
+  Image,
+  Button,
+  Box,
+  Grid,
+  Paper,
+  Text,
+  List,
+  Tabs,
+  Flex,
+  Badge,
+} from "@mantine/core";
+import avitoIcon1 from "../assets/avito.png";
 
 function ResultPage() {
   const location = useLocation();
   const responseData = location.state?.data || {};
   const navigate = useNavigate();
 
-  // Извлекаем общее описание и список обработанных изображений
-  const { common_analysis, images } = responseData;
-  const results = images || [];
+  const { common_analysis = {}, images = [] } = responseData;
 
-  if (!common_analysis || results.length === 0) {
+  if (!common_analysis || images.length === 0) {
     return (
       <Container size="lg" py="xl">
-        <Text>Данные недоступны</Text>
-        <Button onClick={() => navigate('/')} mt="md">
-          Вернуться на главную
+        <Text>Data unavailable</Text>
+        <Button onClick={() => navigate("/")} mt="md">
+          Return to main page
         </Button>
       </Container>
     );
   }
 
+  // Format analysis data for display
+  const damageList = Object.entries(common_analysis).map(([desc, prob]) => ({
+    description: desc,
+    probability: (prob * 100).toFixed(2), // Convert to percentage
+  }));
+
   return (
     <Container size="lg" py="xl">
-      <Flex 
-        justify="center" 
-        align="center" 
-        gap="xl" 
-        mt="xl" 
+      <Flex
+        justify="center"
+        align="center"
+        gap="xl"
+        mt="xl"
         mb="xl"
-        style={{ position: 'relative' }}
+        style={{ position: "relative" }}
       >
-        <Image 
-          src={avitoIcon1 || "/placeholder.svg"} 
-          alt="Avito Logo" 
+        <Image
+          src={avitoIcon1 || "/placeholder.svg"}
+          alt="Avito Logo"
           width={150}
           height={80}
           fit="contain"
         />
-        <Button 
-          onClick={() => navigate('/')}
+        <Button
+          onClick={() => navigate("/")}
           size="lg"
           style={{
-            position: 'absolute',
+            position: "absolute",
             right: 0,
-            fontSize: '16px',
-            padding: '12px 24px'
+            fontSize: "16px",
+            padding: "12px 24px",
           }}
         >
-          Назад
+          Back
         </Button>
       </Flex>
 
-      {/* Вкладки с фотографиями */}
+      {/* Tabs with photos */}
       <Tabs defaultValue={`photo-0`}>
         <Tabs.List>
-          {results.map((result, index) => (
+          {images.map((_, index) => (
             <Tabs.Tab key={index} value={`photo-${index}`}>
-              Фото {index + 1}
+              Photo {index + 1}
             </Tabs.Tab>
           ))}
         </Tabs.List>
 
-        {results.map((result, index) => {
-          const imageUrl = result.processed_image.startsWith('/')
-            ? `http://localhost:8082${result.processed_image}`
+        {images.map((result, index) => {
+          const imageUrl = result.processed_image.startsWith("/")
+            ? `http://192.168.53.251:8082${result.processed_image}`
             : result.processed_image;
 
           return (
             <Tabs.Panel key={index} value={`photo-${index}`} pt="xl">
               <Grid gutter="xl" align="stretch">
-                {/* Левая колонка - фотография */}
+                {/* Left column - photo */}
                 <Grid.Col span={6}>
-                  <Paper 
-                    withBorder 
-                    radius="md" 
-                    style={{ 
-                      height: '100%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      padding: '20px',
-                      backgroundColor: '#f8f9fa'
+                  <Paper
+                    withBorder
+                    radius="md"
+                    style={{
+                      height: "100%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      padding: "20px",
+                      backgroundColor: "#f8f9fa",
                     }}
                   >
                     <Image
                       src={imageUrl || "/placeholder.svg"}
-                      alt={`Фото автомобиля ${index + 1}`}
+                      alt={`Car photo ${index + 1}`}
                       radius="md"
-                      style={{ 
-                        maxWidth: '100%',
-                        maxHeight: '500px',
-                        objectFit: 'contain'
+                      style={{
+                        maxWidth: "100%",
+                        maxHeight: "500px",
+                        objectFit: "contain",
                       }}
                     />
                   </Paper>
                 </Grid.Col>
 
-                {/* Правая колонка - описание автомобиля */}
+                {/* Right column - damage analysis */}
                 <Grid.Col span={6}>
-                  <Paper 
-                    shadow="sm" 
-                    p="xl" 
-                    radius="md" 
+                  <Paper
+                    shadow="sm"
+                    p="xl"
+                    radius="md"
                     withBorder
-                    style={{ 
-                      height: '100%',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      backgroundColor: '#f8f9fa'
+                    style={{
+                      height: "100%",
+                      display: "flex",
+                      flexDirection: "column",
+                      backgroundColor: "#f8f9fa",
                     }}
                   >
                     <Box style={{ flex: 1 }}>
-                      <Title order={3} mb="md" align="center">Описание автомобиля</Title>
-                      
+                      <Title order={3} mb="md" align="center">
+                        Damage Analysis
+                      </Title>
                       <Box mb="xl">
-                        <Text size="lg" weight={500} mb="sm">Детали:</Text>
-                        <List spacing="sm" size="sm" mb="md">
-                          <List.Item>Марка: <strong>{common_analysis.make}</strong></List.Item>
-                          <List.Item>Модель: <strong>{common_analysis.model}</strong></List.Item>
-                          <List.Item>Год выпуска: <strong>{common_analysis.year}</strong></List.Item>
-                          <List.Item>Цвет: <strong>{common_analysis.color}</strong></List.Item>
-                          <List.Item>Состояние: <strong>{common_analysis.condition}</strong></List.Item>
-                          <List.Item>Диапазон цен: <strong>{common_analysis.price_range}</strong></List.Item>
-                        </List>
-                      </Box>
-
-                      <Box mb="xl">
-                        <Text size="lg" weight={500} mb="sm">Особенности:</Text>
-                        <List spacing="sm" size="sm" mb="md">
-                          {common_analysis.features.map((feature, idx) => (
-                            <List.Item key={idx}>{feature}</List.Item>
-                          ))}
-                        </List>
-                      </Box>
-
-                      <Box>
-                        <Text size="lg" weight={500} mb="sm">Анализ рынка:</Text>
-                        <Text size="sm">{common_analysis.market_analysis}</Text>
+                        <Text size="lg" weight={500} mb="sm">
+                          Detected damages:
+                        </Text>
+                        {damageList.length > 0 ? (
+                          <List spacing="sm" size="sm" mb="md">
+                            {damageList.map((damage, idx) => (
+                              <List.Item key={idx}>
+                                {damage.description}:{" "}
+                                <Badge color="blue">{damage.probability}%</Badge>
+                              </List.Item>
+                            ))}
+                          </List>
+                        ) : (
+                          <Text size="sm" color="dimmed">
+                            No damages detected
+                          </Text>
+                        )}
                       </Box>
                     </Box>
                   </Paper>

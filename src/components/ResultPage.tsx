@@ -82,7 +82,7 @@ function ResultPage() {
 
         {images.map((result, index) => {
           const imageUrl = result.processed_image.startsWith("/")
-            ? `http://192.168.53.251:8082${result.processed_image}`
+            ? `http://localhost:8082${result.processed_image}`
             : result.processed_image;
 
           return (
